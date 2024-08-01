@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopwatch</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(45deg, #000000, #FF6F00);
+            background-size: 400% 400%;
+            animation: gradientAnimation 20s ease infinite;
+            border: 10px solid black;
+        }
+
+        .stopwatch {
+            text-align: center;
+            margin-top: 12rem;
+        }
+
+        #display {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: black;
+        }
+
+        .buttons {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            margin: 10px;
+            padding: 15px 40px;
+            border: none;
+            outline: none;
+            color: rgb(241, 90, 35);
+            cursor: pointer;
+            position: relative;
+            z-index: 0;
+            border-radius: 12px;
+            background-color: #333;
+            font-size: 1em;
+        }
+
+        .btn::after {
+            content: "";
+            z-index: -1;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color:black;
+            left: 0;
+            top: 0;
+            border-radius: 10px;
+        }
+
+        .btn::before {
+            content: "";
+            background: linear-gradient(
+                45deg,
+                #FF0000, #FF7300, #FFFB00, #48FF00,
+                #00FFD5, #002BFF, #FF00C8, #FF0000
+            );
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            background-size: 600%;
+            z-index: -1;
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            filter: blur(8px);
+            animation: glowing 20s linear infinite;
+            transition: opacity .3s ease-in-out;
+            border-radius: 10px;
+            opacity: 0;
+        }
+
+        @keyframes glowing {
+            0% {background-position: 0 0;}
+            50% {background-position: 400% 0;}
+            100% {background-position: 0 0;}
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn:active::after {
+            background: transparent;
+        }
+
+        .btn:active {
+            color: #000;
+            font-weight: bold;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 0%; }
+            25% { background-position: 25% 25%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .stopwatch.running {
+            animation: gradientAnimation 5s ease infinite;
+        }
+
+        .stopwatch.stopped {
+            animation: none;
+        }
+
+        #laps {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        #laps div {
+            background-color: #333;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+        }
+        #heading{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            font-size: 3rem;
+            color: #000;        }
+    </style>
+</head>
+<body>
+     <h1 id="heading">On Your Mark!</h1>
+    <div class="stopwatch" id="stopwatch">
+        <div id="display">00:00:00.000</div>
+        <div class="buttons">
+            <button id="startStop" class="btn" onclick="startStop()">Start</button>
+            <button id="reset" class="btn" onclick="reset()">Reset</button>
+            <button id="lap" class="btn" onclick="lap()">Lap</button>
+        </div>
+        <div id="laps"></div>
+    </div>
+    <script>
+        let timer;
+        let isRunning = false;
+        let startTime;
+        let elapsedTime = 0;
+        let lapCounter = 1;
+
+        function startStop() {
+            if (isRunning) {
+                clearInterval(timer);
+                document.getElementById('startStop').textContent = 'Start';
+                document.getElementById('stopwatch').classList.remove('running');
+                document.getElementById('stopwatch').classList.add('stopped');
+            } else {
+                startTime = Date.now() - elapsedTime;
+                timer = setInterval(updateDisplay, 10);
+                document.getElementById('startStop').textContent = 'Stop';
+                document.getElementById('stopwatch').classList.remove('stopped');
+                document.getElementById('stopwatch').classList.add('running');
+            }
+            isRunning = !isRunning;
+        }
+
+        function reset() {
+            clearInterval(timer);
+            isRunning = false;
+            elapsedTime = 0;
+            document.getElementById('display').textContent = '00:00:00.000';
+            document.getElementById('startStop').textContent = 'Start';
+            document.getElementById('laps').innerHTML = '';
+            lapCounter = 1;
+            document.getElementById('stopwatch').classList.remove('running');
+            document.getElementById('stopwatch').classList.add('stopped');
+        }
+
+        function lap() {
+            if (isRunning) {
+                const lapTime = formatTime(elapsedTime);
+                const lapDiv = document.createElement('div');
+                lapDiv.textContent = `Lap ${lapCounter}: ${lapTime}`;
+                document.getElementById('laps').appendChild(lapDiv);
+                lapCounter++;
+            }
+        }
+
+        function updateDisplay() {
+            elapsedTime = Date.now() - startTime;
+            document.getElementById('display').textContent = formatTime(elapsedTime);
+        }
+
+        function formatTime(time) {
+            const date = new Date(time);
+            const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+            const milliseconds = String(date.getUTCMilliseconds()).padStart(3, '0');
+            return `${minutes}:${seconds}:${milliseconds}`;
+        }
+    </script>
+</body>
+</html>
